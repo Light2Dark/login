@@ -1,0 +1,20 @@
+{
+  "name": "login3",
+  "version": "1.0.0",
+  "description": "iCheckin attendance bot on Telegram, powered by AWS Lambda functions",
+  "main": "telegram_bot.py",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "iCheckin",
+    "automation",
+    "AWS",
+    "Lambda"
+  ],
+  "author": "Shahmir",
+  "license": "ISC",
+  "dependencies": {
+    "serverless": "^3.23.0"
+  }
+}

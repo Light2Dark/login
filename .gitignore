@@ -1,0 +1,15 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# env & secrets
+*.env
+secrets
+
+# miscel
+others
+lambda
+curl_reqs.txt

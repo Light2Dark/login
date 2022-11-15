@@ -1,0 +1,48 @@
+service: icheckin-lambda
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-southeast-1
+  timeout: 900
+  environment:
+    telegram_bot_key: ${env:telegram_bot_key}
+    FONTCONFIG_PATH: "/opt/etc/fonts"
+
+functions:
+  main:
+    memorySize: 500
+    handler: handler.lambda_handler
+    events:
+      - http:
+          path: icheckin
+          method: any
+          cors: true
+
+    layers:
+      - arn:aws:lambda:ap-southeast-1:934642869422:layer:telegram-bot:1
+      - arn:aws:lambda:ap-southeast-1:934642869422:layer:headless-chromium-chromedriver:1
+
+resources:
+  Resources:
+    ApiGatewayRestApi:
+      Properties:
+        BinaryMediaTypes:
+          - "*/*"
+
+package:
+  excludeDevDependencies: true
+  exclude:
+    - .git/**
+    - .vscode/**
+    - venv/**
+    - __pycache__/**
+    - node_modules/**
+    - lambda/**
+    - secrets/**
+    - jspm_packages/**
+    - .serverless/**
+    - others/**
+    - chromedriver.exe
+    - lambda_layers/**
+    - curl_reqs.txt
