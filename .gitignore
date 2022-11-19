@@ -8,6 +8,7 @@ jspm_packages
 # env & secrets
 *.env
 secrets
+bot_data
 
 # miscel
 others

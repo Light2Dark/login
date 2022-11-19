@@ -10,13 +10,25 @@ import logging
 from telegram import Update
 from telegram.ext import filters, MessageHandler, CommandHandler, ContextTypes
 
-# creating the bot
 storage_path = "/tmp/bot_data" if os.environ.get("AWS_EXECUTION_ENV") is not None else "bot_data"
 
-def create_application():
-  persistence = PicklePersistence(filepath=storage_path, on_flush=True) # on_flush true means that it will only save to file when flush() is called
-  application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
-  return application
+logging.basicConfig(
+  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+  level=logging.INFO
+)
+logging.getLogger().setLevel(logging.INFO)
+
+def print_pickle_file(path: str):
+  """Prints pickle data from specified path"""
+  objects = []
+  with (open(path, "rb")) as openfile:
+    while True:
+        try:
+            objects.append(pickle.load(openfile))
+        except EOFError:
+            break
+  print("objects", objects)
+  # bot_data = pickle.loads(s3.Bucket("icheckin-user-data").Object("bot_data").get()['Body'].read())
 
 def get_db():
   """Reads pickle data from S3, then loads it in temp file under lambda"""
@@ -47,17 +59,6 @@ async def persist_data(persistence: PicklePersistence): # We need to control whe
   await persistence.flush()
   update_db()
 
-logging.basicConfig(
-  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-  level=logging.INFO
-)
-logging.getLogger().setLevel(logging.INFO)
-
-persistence = PicklePersistence(filepath=storage_path, on_flush=True) # on_flush true means that it will only save to file when flush() is called
-application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
-
-# bot_data = pickle.loads(s3.Bucket("icheckin-user-data").Object("bot_data").get()['Body'].read())
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = """
     Welcome to iCheckin Bot! Please use the following commands to set your login details:
@@ -71,20 +72,16 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def username(update: Update, context: ContextTypes.DEFAULT_TYPE):
     username = ' '.join(context.args)
     context.user_data['username'] = username
-    await persist_data(persistence)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Your username has been set to {}".format(username))
 
 async def password(update: Update, context: ContextTypes.DEFAULT_TYPE):
     password = ' '.join(context.args)
     context.user_data['password'] = password
-    await persist_data(persistence)
-    print(persistence.chat_data)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Your password has been set")
     
 async def student_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
     student_id = ' '.join(context.args)
     context.user_data['student_id'] = student_id
-    await persist_data(persistence)
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Your student ID has been set to {}".format(student_id))
     
 async def login(icheckinCode, context: ContextTypes.DEFAULT_TYPE):
@@ -110,18 +107,11 @@ async def loginText(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
  
+   
+persistence = PicklePersistence(filepath=storage_path)
+application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
     
 def run_bot():    
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.INFO
-    )
-    
-    persistence = PicklePersistence(filepath='bot_data')
-    
-    # application = ApplicationBuilder().token(os.environ["telegram_bot_key"]).build()
-    application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
-    
     start_handler = CommandHandler('start', start)
     application.add_handler(start_handler)
     
@@ -147,7 +137,19 @@ def run_bot():
     application.run_polling()
 
 if __name__ == '__main__':
-    run_bot()
+    # run_bot()
+    # print_pickle_file("bot_data_1")
+    async def start_test(update: Update, context: ContextTypes.DEFAULT_TYPE):
+      context.user_data["start"] = "helo"
+      await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
+    
+    persistence = PicklePersistence(filepath="bot_data_1")
+    application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
+    
+    start_handler = CommandHandler('start', start_test)
+    application.add_handler(start_handler)
+    
+    application.run_polling()
     
     
     
@@ -157,13 +159,3 @@ if __name__ == '__main__':
 #     # print(await bot.get_me())
 #     # print((await bot.get_updates())[0])
 #     # await bot.send_message("5144627212", "Hi Shahmir")
-
-def print_pickle_file(path: str):
-  objects = []
-  with (open(path, "rb")) as openfile:
-    while True:
-        try:
-            objects.append(pickle.load(openfile))
-        except EOFError:
-            break
-  print("objects", objects)

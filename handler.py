@@ -1,14 +1,23 @@
-from telegram_bot import start, username, password, student_id, loginCommand, loginText, unknown, application, print_pickle_file
+from telegram_bot import start, username, password, student_id, loginCommand, loginText, unknown, storage_path, get_db, update_db, print_pickle_file
+from telegram.ext import PicklePersistence, Application
 from telegram import Update
 import json
 import asyncio
 from telegram.ext import CommandHandler, MessageHandler, filters
 import base64
+from dotenv import load_dotenv
+import os
+load_dotenv()
+
+# pull from S3 and load to local file
+get_db()
+persistence = PicklePersistence(filepath=storage_path)
+application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
 
 def lambda_handler(event, context):
   return asyncio.get_event_loop().run_until_complete(main(event, context))
 
-async def main(event, context):
+async def main(event, context):  
   start_handler = CommandHandler('start', start)
   application.add_handler(start_handler)
   
@@ -51,6 +60,9 @@ async def main(event, context):
         'body': 'Failure: ' + str(exc)
   } 
   
-  # finally:
-  #   await persistence.flush()
-  #   await update_db()
+  finally:
+    print("before flush", persistence.user_data)
+    await persistence.flush()
+    print("after flush", persistence.user_data)
+    update_db()
+    print_pickle_file(storage_path)
