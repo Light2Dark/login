@@ -5,10 +5,6 @@ jspm_packages
 # Serverless directories
 .serverless
 
-# lambda layers (dependencies)
-lambda_layers
-lambda
-
 # env & secrets
 *.env
 secrets
