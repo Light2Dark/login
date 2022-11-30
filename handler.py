@@ -8,6 +8,14 @@ import base64
 from dotenv import load_dotenv
 import os
 load_dotenv()
+import logging
+
+# logging
+logging.basicConfig(
+  format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+  level=logging.INFO
+)
+logging.getLogger().setLevel(logging.INFO)
 
 # pull from S3 and load to local file
 get_db()
@@ -61,8 +69,6 @@ async def main(event, context):
   } 
   
   finally:
-    print("before flush", persistence.user_data)
     await persistence.flush()
-    print("after flush", persistence.user_data)
     update_db()
     print_pickle_file(storage_path)

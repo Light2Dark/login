@@ -14,3 +14,7 @@ bot_data
 others
 lambda
 curl_reqs.txt
+*.excalidraw
+
+# dependencies
+lambda_layers
