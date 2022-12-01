@@ -29,6 +29,11 @@ def print_pickle_file(path: str):
             break
   print("objects", objects)
   # bot_data = pickle.loads(s3.Bucket("icheckin-user-data").Object("bot_data").get()['Body'].read())
+  
+def create_bot():
+  persistence = PicklePersistence(filepath=storage_path)
+  application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
+  return application
 
 def get_db():
   """Reads pickle data from S3, then loads it in temp file under lambda"""
@@ -107,49 +112,39 @@ async def loginText(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
  
-   
-persistence = PicklePersistence(filepath=storage_path)
-application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
     
 def run_bot():    
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
-    
-    username_handler = CommandHandler('username', username)
-    application.add_handler(username_handler)
-    
-    student_id_handler = CommandHandler('studentID', student_id)
-    application.add_handler(student_id_handler)
-    
-    password_handler = CommandHandler('password', password)
-    application.add_handler(password_handler)
-    
-    login_handler = CommandHandler('login', loginCommand)
-    application.add_handler(login_handler)
-    
-    login_text_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), loginText)
-    application.add_handler(login_text_handler)
-    
-    unknown_handler = MessageHandler(filters.COMMAND, unknown)
-    application.add_handler(unknown_handler)
-    
-    # runs the bot server until interrupted
-    application.run_polling()
+  persistence = PicklePersistence(filepath=storage_path)
+  application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
+  
+  start_handler = CommandHandler('start', start)
+  application.add_handler(start_handler)
+  
+  username_handler = CommandHandler('username', username)
+  application.add_handler(username_handler)
+  
+  student_id_handler = CommandHandler('studentID', student_id)
+  application.add_handler(student_id_handler)
+  
+  password_handler = CommandHandler('password', password)
+  application.add_handler(password_handler)
+  
+  login_handler = CommandHandler('login', loginCommand)
+  application.add_handler(login_handler)
+  
+  login_text_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), loginText)
+  application.add_handler(login_text_handler)
+  
+  unknown_handler = MessageHandler(filters.COMMAND, unknown)
+  application.add_handler(unknown_handler)
+  
+  # runs the bot server until interrupted
+  application.run_polling()
 
+# running on local machine
 if __name__ == '__main__':
-    # run_bot()
+    run_bot()
     # print_pickle_file("bot_data_1")
-    async def start_test(update: Update, context: ContextTypes.DEFAULT_TYPE):
-      context.user_data["start"] = "helo"
-      await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!")
-    
-    persistence = PicklePersistence(filepath="bot_data_1")
-    application = Application.builder().token(os.environ["telegram_bot_key"]).persistence(persistence=persistence).build()
-    
-    start_handler = CommandHandler('start', start_test)
-    application.add_handler(start_handler)
-    
-    application.run_polling()
     
     
     

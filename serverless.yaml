@@ -7,11 +7,13 @@ provider:
   timeout: 900
   environment:
     telegram_bot_key: ${env:telegram_bot_key}
+    access_key: ${env:access_key}
+    secret_key: ${env:secret_key}
     FONTCONFIG_PATH: "/opt/etc/fonts"
 
 functions:
   main:
-    memorySize: 500
+    memorySize: 1000
     handler: handler.lambda_handler
     events:
       - http:
@@ -20,8 +22,8 @@ functions:
           cors: true
 
     layers:
-      - arn:aws:lambda:ap-southeast-1:934642869422:layer:telegram-bot:1
-      - arn:aws:lambda:ap-southeast-1:934642869422:layer:headless-chromium-chromedriver:1
+      - arn:aws:lambda:ap-southeast-1:934642869422:layer:python-selenium-telegram:2
+      - arn:aws:lambda:ap-southeast-1:934642869422:layer:chromedriver-headless_chromium:2
 
 resources:
   Resources:
@@ -46,3 +48,5 @@ package:
     - chromedriver.exe
     - lambda_layers/**
     - curl_reqs.txt
+    - aws.excalidraw
+    - persistences

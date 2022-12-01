@@ -2,26 +2,26 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from dotenv import load_dotenv
 # from headless_chrome import create_driver
+from webdriver_manager.chrome import ChromeDriverManager
 import os
 load_dotenv()
 
 def Login(student_ID: str, passwordString: str, icheckinCode: str):
   
-  if os.environ.get("AWS_EXECUTION_ENV") is None:
-    chrome_options = webdriver.ChromeOptions()
-    if os.environ.get("AWS_EXECUTION_ENV") is not None:
-      chrome_options.binary_location = "/opt/headless-chromium" # FOR AWS LAMBDA
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--single-process')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    browser = webdriver.Chrome('/opt/chromedriver',options=chrome_options) if os.environ.get("AWS_EXECUTION_ENV") else webdriver.Chrome('chromedriver',chrome_options=chrome_options) # FOR AWS LAMBDA and LOCAL
-    browser = webdriver.Chrome('chromedriver',chrome_options=chrome_options)
-  else:  # AWS LAMBDA
-    # browser = create_driver()
-    browser = None
+  chrome_options = webdriver.ChromeOptions()
+  if os.environ.get("AWS_EXECUTION_ENV") is not None: # for aws lambda
+    chrome_options.binary_location = '/opt/headless-chromium'
+
+  # FOR AWS LAMBDA and LOCAL
+  chrome_options.add_argument('--headless')
+  chrome_options.add_argument('--no-sandbox')
+  chrome_options.add_argument('--single-process')
+  chrome_options.add_argument('--disable-dev-shm-usage')  
+  browser = webdriver.Chrome('/opt/chromedriver', options=chrome_options) if os.environ.get("AWS_EXECUTION_ENV") else webdriver.Chrome('chromedriver', options=chrome_options)
+  # browser = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
   browser.get("https://izone.sunway.edu.my/login")
 
@@ -41,7 +41,7 @@ def Login(student_ID: str, passwordString: str, icheckinCode: str):
     return login_error.text
   except:
     pass # no error
-    
+  
   # wait for 6 seconds for logging in process before proceeding
   icheckin = WebDriverWait(browser, 6).until(
   EC.presence_of_element_located((By.ID, 'iCheckInUrl')))
@@ -63,10 +63,10 @@ def Login(student_ID: str, passwordString: str, icheckinCode: str):
 
   # exit browser
   browser.close()
+  browser.quit()
   
   # return the reply from server
-  print(reply)
   return reply
     
 if __name__ == "__main__":
-  Login("1806631", "Sunway4edu@me", "123456")
+  print(Login(os.environ["username"], os.environ["password"], "123456")) # testing
