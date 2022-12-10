@@ -1,14 +1,27 @@
-service: icheckin-lambda
+service: icheckin
 
 provider:
   name: aws
   runtime: python3.9
   region: ap-southeast-1
   timeout: 900
+  iam:
+    role:
+      statements:
+        # Allow functions to list all buckets
+        - Effect: Allow
+          Action: 's3:ListBucket'
+          Resource: '*'
+        # Allow functions to read/write objects in the icheckin bucket
+        - Effect: Allow
+          Action:
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:DeleteObject'
+          Resource:
+            - 'arn:aws:s3:::icheckin-user-data/*'
   environment:
     telegram_bot_key: ${env:telegram_bot_key}
-    access_key: ${env:access_key}
-    secret_key: ${env:secret_key}
     FONTCONFIG_PATH: "/opt/etc/fonts"
 
 functions:
@@ -22,8 +35,8 @@ functions:
           cors: true
 
     layers:
-      - arn:aws:lambda:ap-southeast-1:934642869422:layer:python-selenium-telegram:2
-      - arn:aws:lambda:ap-southeast-1:934642869422:layer:chromedriver-headless_chromium:2
+      - ${cf:lambda-layer-dev.PythonLayerExport}
+      - ${cf:lambda-layer-dev.ChromedriverLayerExport}
 
 resources:
   Resources:

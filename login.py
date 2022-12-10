@@ -4,14 +4,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from dotenv import load_dotenv
-# from headless_chrome import create_driver
-from webdriver_manager.chrome import ChromeDriverManager
 import os
 load_dotenv()
 
 def Login(student_ID: str, passwordString: str, icheckinCode: str):
   
-  chrome_options = webdriver.ChromeOptions()
+  chrome_options = Options()
   if os.environ.get("AWS_EXECUTION_ENV") is not None: # for aws lambda
     chrome_options.binary_location = '/opt/headless-chromium'
 
@@ -21,7 +19,6 @@ def Login(student_ID: str, passwordString: str, icheckinCode: str):
   chrome_options.add_argument('--single-process')
   chrome_options.add_argument('--disable-dev-shm-usage')  
   browser = webdriver.Chrome('/opt/chromedriver', options=chrome_options) if os.environ.get("AWS_EXECUTION_ENV") else webdriver.Chrome('chromedriver', options=chrome_options)
-  # browser = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
 
   browser.get("https://izone.sunway.edu.my/login")
 
