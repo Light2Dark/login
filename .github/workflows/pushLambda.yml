@@ -23,8 +23,10 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Navigate to lambda_layers folder and serverless deploy
+    - name: navigate to lambda_layers folder
       run: cd lambda_layers
+
+    - name: run serverless deploy in lambda_layers
       uses: serverless/github-action@v3.1
       with:
         args: deploy
@@ -32,8 +34,10 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-    - name: serverless lambda deploy
+    - name: navigate to main code folder
       run: cd ..
+
+    - name: run serverless deploy in main code folder
       uses: serverless/github-action@v3.1
       with:
         args: deploy
